@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en"> 
+ <head> 
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>Simple Calendar</title> 
+  <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: black; /* Black background */
+            color: white;
+        }
+        .calendar-date {
+            font-size: 48px;
+        }
+    </style> 
+ </head> 
+ <body> 
+  <div class="calendar-date" id="calendar-date">
+    00/00/0000 00:00 
+  </div> 
+  <script>
+    const calendarDateElement = document.getElementById('calendar-date');
+
+    // Calendar start date
+    const calendarStartDate = new Date(Date.UTC(2025, 0, 1, 0, 0)); // January 1, 2025, 00:00 UTC
+    const realStartDate = new Date(Date.UTC(2024, 9, 3, 17, 0)); // October 3, 2024, 18:00 UTC
+
+    // Define freeze date and resume date
+    const freezeDate = new Date(Date.UTC(2032, 4, 3, 4, 50)); // May 3, 2032, 04:50 UTC
+    const resumeRealDate = new Date(Date.UTC(2024, 9, 3, 17, 0)); // October 3, 2024, 18:00 UTC
+
+    let intervalID;
+    let isFrozen = false; // To track if the calendar is frozen
+
+    function initializeCalendar() {
+        updateCalendarDate(calculateSimulatedDate());
+        startUpdatingCalendar();
+    }
+
+    function calculateSimulatedDate() {
+        const now = new Date();
+        // If the calendar is frozen, return the freeze date
+        if (isFrozen) {
+            return freezeDate;
+        }
+        
+        const elapsedRealTime = now - realStartDate; // Elapsed real time in milliseconds
+
+        // Convert elapsed real time to simulated time
+        const realDaysElapsed = elapsedRealTime / (1000 * 60 * 60 * 24); // Convert elapsed real time to days
+        const simulatedYearsElapsed = realDaysElapsed / 6; // 6 real days = 1 year in calendar
+        const simulatedDate = new Date(calendarStartDate.getTime() + simulatedYearsElapsed * (365 * 24 * 60 * 60 * 1000)); // Simulated time
+        
+        return simulatedDate;
+    }
+
+    function startUpdatingCalendar() {
+        intervalID = setInterval(() => {
+            const now = new Date();
+
+            // Check if we need to freeze the calendar
+            if (!isFrozen && now >= freezeDate) {
+                isFrozen = true; // Freeze the calendar
+            }
+
+            // If the calendar is frozen, do not update until the resume date
+            if (isFrozen) {
+                return; // Don't update if frozen
+            }
+
+            // Update the displayed date
+            updateCalendarDate(calculateSimulatedDate());
+        }, 1000); // Update every second
+    }
+
+    function updateCalendarDate(date) {
+        const year = date.getUTCFullYear();
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const hours = String(date.getUTCHours()).padStart(2, '0');
+        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+        calendarDateElement.textContent = `${day}/${month}/${year} ${hours}:${minutes}`;
+    }
+
+    // Initialize the calendar
+    initializeCalendar();
+</script> 
+ 
+</body></html>
